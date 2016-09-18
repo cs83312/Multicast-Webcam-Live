@@ -11,21 +11,16 @@ package useragent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.ByteBuffer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import net.sf.fmj.utility.URLUtils;
-
 
 
 
@@ -36,7 +31,10 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	private String URI; 
 	private int maxConnect; 
 	private String parentURI; 
+	private FrameMain frame;
 	public int state;
+	
+
 	private MenuBar setMainMenuBar(){
 		
 		MenuBar menuBar = new MenuBar(); 
@@ -58,7 +56,6 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					sendFile.writeFileInSendRec();
 					state=1;
 					
-					
 					sendFile.readFile();
 					System.out.println(sendFile.getSendReceive());
 					String sipServer = readConfigFileToGetSIPServer(); 
@@ -78,55 +75,63 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					
 					
 					// TODO: 開啟擷取影片之 Device 
-					//playerPanel.onOpenCaptureDevice();
+					
+					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
+					final WebCam cam = new WebCam();
+
+					
+					final Thread t = new Thread(){
+						@Override
+						public void run(){
+							RTPConnecter RTPServer = new RTPConnecter();
+							System.out.println("client has come");
+							//ImageCodec imgCodec = new ImageCodec();
+							while(true){
+								
+								BufferedImage img = (BufferedImage) cam.startWebCam();
+								// way two 
+								   ByteArrayOutputStream baos = new ByteArrayOutputStream();        
+								   try {
+									ImageIO.write(img, "jpg", baos);
+									//byte[] buf = imgCodec.encodeImage(img);
+									baos.flush();
+									 byte[] buffer = baos.toByteArray();
+									 
+									 g2d.drawImage(img,0,0,null);
+							
+									 
+									 
+									 
+								//	RTPServer.RTPSend("0",0,buffer);
+									
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} 
+								  
+								
+							}
+					}
+						
+					};
+					t.setDaemon(true);
+					t.start();
+					
+					
+					
 					
 					//********** call vlc to be stream server **********  
-				/*	try {
+					/*try {
 						Runtime rt = Runtime.getRuntime();
 						Process proc = rt.exec(new String[]{"bash", "-c", "/usr/bin/cvlc screen:// :input-slave=alsa:// :screen-fps=10 :screen-follow-mouse :sout='#transcode{acodec=mpga, vcodec=h264, vb=1024, scale=0.6, venc=x264{scenecut=100, bframes=0, keyint=10}} :std{access=http, mux=ts, dst=:8080}'"}); 
 					}
 					catch (Throwable t){
 						t.printStackTrace(); 
-					}
-					 //---*************************************-/
-					
-					
-					String tmp = readConfigFileToGetP2PServer();
-					String addrs[] = tmp.split(":"); 
-					String streamID = ""; */
-					
-					// 加入 P2P 網路
-				/*	P2PTracker tracker = new P2PTracker(addrs[0], Integer.parseInt(addrs[1]), URI, maxConnect); 
-					if( tracker.getState() == true ){
-						streamID = tracker.getData();
-					}
-					else{
-						streamID = null; 
-					} 
-					
-					// 將 P2P Server 位址與頻道 ID 製作成種子檔案
-					
-					if(streamID != null){
-						try {
-							FileWriter file = new FileWriter((new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())) + ".seed"); 
-							BufferedWriter fw = new BufferedWriter(file); 
-							
-							fw.write(addrs[0] + ":" + addrs[1]);
-							fw.newLine(); 
-							fw.write(streamID); 
-							fw.newLine(); 
-							fw.close(); 
-							file.close(); 
-						}
-						catch ( IOException t ) {
-							t.printStackTrace(); 
-						}
-
-					}
-					else {
-						// TODO: 跳出種子製作失敗訊息
 					}*/
-				
+					 //---*************************************-/
+					  
+					
+					
 					
 					
 					
@@ -152,7 +157,27 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					String parent = null;
 							//onOpenFileAndGetParentURI();
 					
-					if(parent == null){
+					final RTPConnecter clientRecv =new RTPConnecter("127.0.0.1",1234);
+					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
+					Thread recv = new Thread(){
+						
+						@Override
+						public void run(){
+							while(true){
+							//	g2d.drawImage(clientRecv.RTPreceive(),0,0,null);
+								
+								
+							//	System.out.println("client receiving");
+							}
+							
+						}
+						
+					};
+					recv.start();
+					
+					
+					
+					/*if(parent == null){
 						JFrame qq = new JFrame(); 
 						qq.setSize(360, 60); 
 						qq.setLocation(400, 400); 
@@ -161,11 +186,12 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 						tf.setEditable(false); 
 						qq.add(tf, BorderLayout.CENTER); 
 						qq.setVisible(true); 
-					}
+					}*/
+					
 					
 					// TODO: 取得 URI 之 連線資訊
 					 
-					String sipServer = readConfigFileToGetSIPServer(); 
+					/*String sipServer = readConfigFileToGetSIPServer(); 
 					String sipServerIP[] = sipServer.split(":");
 					String sipParentIP = null; 
 					String sipMyIP = null;
@@ -179,7 +205,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					}
 					catch(IOException io){
 						io.printStackTrace(); 
-					}
+					}*/
 					
 					//********** use mplayer to playback **********  
 					
@@ -411,7 +437,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 		URI = username + "@" + sipServerIP; 
 		maxConnect = max; 
 		state=-1;
-		
+		frame = this;
 		this.setSize(1280, 720); 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLocation(0, 0); 
@@ -438,6 +464,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		System.out.println("thread runing");
 		
 	}
 
