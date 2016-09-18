@@ -105,7 +105,6 @@ public class Main {
 			sip.setUserName(userName); 
 			sip.register(); 
 					
-
 		
 		// 註冊完畢，寫入資訊
 	/*	fileSetting.setMaxConnect(maxConnect); 
