@@ -102,7 +102,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 									 
 									 
 									 
-								//	RTPServer.RTPSend("0",0,buffer);
+									RTPServer.RTPSend(buffer);
 									
 								} catch (IOException e) {
 									// TODO Auto-generated catch block
@@ -164,7 +164,14 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 						@Override
 						public void run(){
 							while(true){
-							//	g2d.drawImage(clientRecv.RTPreceive(),0,0,null);
+								
+								try {
+									g2d.drawImage(clientRecv.RTPreceive(),0,0,null);
+									
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 								
 								
 							//	System.out.println("client receiving");

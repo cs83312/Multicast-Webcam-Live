@@ -21,6 +21,7 @@ public class WebCam {
 	}
 
 	public Image startWebCam(){
+		if(webC.isOpen()==false)
 		webC.open();
 		return webC.getImage();
 	}
