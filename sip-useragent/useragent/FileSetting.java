@@ -129,13 +129,7 @@ public class FileSetting {
 	public FileSetting(String name){
 		fileName = name; 
 		userName = ""; 
-		sendReceive="";
 		maxConnect = 0; 
-	}
-	public FileSetting(String name,String sendRec)
-	{
-		fileName = name;
-		sendReceive = sendRec;
 	}
 	public FileSetting(String name, String user, int max){
 		fileName = name; 

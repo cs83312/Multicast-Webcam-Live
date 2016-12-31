@@ -25,7 +25,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
-import useragent.MulticastTest.Node;
+
 
 
 
@@ -60,14 +60,14 @@ public class RTPConnecter implements ActionListener {
 	static BufferedReader RTSPBufferedReader;
 	static BufferedWriter RTSPBufferedWriter;
 	Timer timer;
-	MulticastTest multiLine;
+	public MulticastTest multiLine;
 	boolean serClientPort;
 	
 
 	static int FRAME_PERIOD = 100;
 	
 	public RTPConnecter(){//server create one to one
-		
+	
 		timer = new Timer(FRAME_PERIOD, this);
 	    timer.setInitialDelay(0);
 	    timer.setCoalesce(true);
@@ -80,7 +80,7 @@ public class RTPConnecter implements ActionListener {
 			multiLine = new MulticastTest("127.0.0.1",8555);
 			serClientPort = true;
 			RTPListener();
-			RTPSocket = new DatagramSocket();// 建立傳送的 UDP Socket。
+			RTPSocket = new DatagramSocket();// 撱箇���� UDP Socket��
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -101,7 +101,7 @@ public class RTPConnecter implements ActionListener {
 			RTSPBufferedReader = new BufferedReader(new InputStreamReader(RTSPSocket.getInputStream()) );
 			RTSPBufferedWriter = new BufferedWriter(new OutputStreamWriter(RTSPSocket.getOutputStream()) );
 		    serClientPort = false;
-			RTPSocket = new DatagramSocket();// 設定接收的 UDP Socket.
+			RTPSocket = new DatagramSocket();// 閮剖����� UDP Socket.
 			clientSendRTPSocket = new DatagramSocket();//set sender udp Socket.s
 			RTSPRequest("Invite");
 			RTPListener();
@@ -154,23 +154,28 @@ public class RTPConnecter implements ActionListener {
 					rtp_packet.getpacket(packet_bits);
 					
 					if(serClientPort){
-						if(multiLine.root.childNode.size()!=0)
-							child = multiLine.root.childNode.get(0);
+							
+								for(int i=0;i<multiLine.root.childNode.size();i++)
+								{
+									child = multiLine.root.childNode.get(i);
+									send = new DatagramPacket(packet_bits,packet_bits.length,InetAddress.getByName(child.getAddress()),child.getUdpPort());
+									//System.out.println("send packet"+imageByte.length);
+									RTPSocket.send(send);
+								
+								}	
 					}
 					else if(!serClientPort)
-						if(this.clientNode.childNode.size()!=0)
-						child = this.clientNode.childNode.get(0);
-					
-					if(child!=null){
-							send = new DatagramPacket(packet_bits,packet_bits.length,InetAddress.getByName(child.getAddress()),child.getUdpPort());
-							//System.out.println("send packet"+imageByte.length);
-							if(serClientPort)
-							RTPSocket.send(send);
-							else
-							clientSendRTPSocket.send(send);
-					}
-					
-					}
+						{
+							for(int i=0;i<clientNode.childNode.size();i++)
+							{
+								child = clientNode.childNode.get(i);
+								send = new DatagramPacket(packet_bits,packet_bits.length,InetAddress.getByName(child.getAddress()),child.getUdpPort());
+								//System.out.println("send packet"+imageByte.length);
+								clientSendRTPSocket.send(send);
+							}
+						}
+		
+				}
 
 	public Image RTPreceive() throws IOException{
 		
@@ -188,8 +193,8 @@ public class RTPConnecter implements ActionListener {
 			payload = new byte[rtp_packet.getpayload_length()];
 			rtp_packet.getpayload(payload);
 			RTPSend(payload);
-			System.out.println("Got RTP packet with SeqNum # "+rtp_packet.getsequencenumber()+" TimeStamp "+rtp_packet.gettimestamp()+" ms, of type "+
-			rtp_packet.getpayloadtype()+",flag"+rtp_packet.getFlag()+" rec packet"+payload.length);
+			//System.out.println("Got RTP packet with SeqNum # "+rtp_packet.getsequencenumber()+" TimeStamp "+rtp_packet.gettimestamp()+" ms, of type "+
+			//rtp_packet.getpayloadtype()+",flag"+rtp_packet.getFlag()+" rec packet"+payload.length);
 				return ImageIO.read(new ByteArrayInputStream(payload));
 
 	}

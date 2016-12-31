@@ -94,24 +94,22 @@ public class Main {
 		else {
 			setInfo();  
 		}
-		
-		// 發出註冊訊息		
+				
 			String addrs = readConfigFileToGetSIPServer(); 
 			String sipAddrs[] = addrs.split(":");  
-		  	// TODO:  與 Proxy Server 建立連線，並發出註冊訊息	
-
-			// 	暫時直接與 Registrar Server 建立連線，發出註冊（更新）訊息
+		  
+	
 			SIPCommunicator sip = new SIPCommunicator(sipAddrs[0], Integer.parseInt(sipAddrs[1]));
 			sip.setUserName(userName); 
 			sip.register(); 
 					
 		
-		// 註冊完畢，寫入資訊
+		// 閮餃��嚗神�鞈��
 	/*	fileSetting.setMaxConnect(maxConnect); 
 		fileSetting.setUserName(userName); 
 		fileSetting.writeFile(); 
 */
-		// 開啟使用者介面
+		// ���蝙���
 		FrameMain ui = new FrameMain(userName, maxConnect);
 		Thread mainThread = new Thread(ui); 
 		mainThread.start(); 

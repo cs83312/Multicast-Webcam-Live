@@ -33,10 +33,10 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	private String parentURI; 
 	private FrameMain frame;
 	public int state;
-	
+	RTPConnecter RTPServer =null;
 
 	private MenuBar setMainMenuBar(){
-		
+			
 		MenuBar menuBar = new MenuBar(); 
 		menuBar.setFont(new Font("sans", Font.BOLD, 16)); 
 		
@@ -51,30 +51,11 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
 					
-					FileSetting sendFile = new FileSetting("usersetting","SENDRECV TRUE");
-					if(sendFile.readFile()==true)
-					sendFile.writeFileInSendRec();
-					state=1;
-					
-					sendFile.readFile();
-					System.out.println(sendFile.getSendReceive());
-					String sipServer = readConfigFileToGetSIPServer(); 
-					String sipServerIP[] = sipServer.split(":");
-					String sipParentIP = null; 
-					String sipMyIP = null;
-					System.out.println(sipServerIP[0] + Integer.parseInt(sipServerIP[1]));
-					SIPCommunicator sendRecvCom = new SIPCommunicator(sipServerIP[0], Integer.parseInt(sipServerIP[1]),"SENDRECV TRUE");
-					try {
-						sendRecvCom.senderReceiver();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+					//register to DA
 					
 					
 					
-					
-					// TODO: 開啟擷取影片之 Device 
+					// TODO: �����蔣���� Device 
 					
 					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
 					final WebCam cam = new WebCam();
@@ -83,7 +64,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					final Thread t = new Thread(){
 						@Override
 						public void run(){
-							RTPConnecter RTPServer = new RTPConnecter();
+							RTPServer = new RTPConnecter();
 							System.out.println("client has come");
 							//ImageCodec imgCodec = new ImageCodec();
 							while(true){
@@ -148,14 +129,8 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 		menuItemOpen.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){		
-					FileSetting sendFile = new FileSetting("usersetting","SENDRECV FALSE");
-					if(sendFile.readFile()==true)
-					sendFile.writeFileInSendRec();
-					state=1;
-					System.out.println("sendrecv set false");
-					// 選擇 Seed 後取得來源之 URI 
-					String parent = null;
-							//onOpenFileAndGetParentURI();
+					
+					//search to DA
 					
 					final RTPConnecter clientRecv =new RTPConnecter("127.0.0.1",1234);
 					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
@@ -189,14 +164,14 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 						qq.setSize(360, 60); 
 						qq.setLocation(400, 400); 
 						JTextField tf = new JTextField(); 
-						tf.setText("這場直播可能太熱門了，已經加不進去了\n你可以稍等再嘗試加入！"); 
+						tf.setText("�����憭芰��鈭�歇蝬���脣鈭n雿隞亦����岫��嚗�"); 
 						tf.setEditable(false); 
 						qq.add(tf, BorderLayout.CENTER); 
 						qq.setVisible(true); 
 					}*/
 					
 					
-					// TODO: 取得 URI 之 連線資訊
+					// TODO: ���� URI 銋� ��蝺���
 					 
 					/*String sipServer = readConfigFileToGetSIPServer(); 
 					String sipServerIP[] = sipServer.split(":");
@@ -218,7 +193,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 					
 					
 					
-					// TODO: 以 SIP 方式建立連線，並取得 RTP 串流資訊
+					// TODO: 隞� SIP �撘遣蝡��蝺�蒂���� RTP 銝脫����
 					//playerPanel.onReceiveRTP();
 				}
 			}
@@ -232,9 +207,9 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 		menuItemClose.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					// TODO: 傳送 BYE 訊息給轉播端（SIP）
+					// TODO: ��� BYE 閮蝯西�蝡荔�IP嚗�
 					
-					// TODO: 離開 P2P 網路
+					// TODO: ���� P2P 蝬脰楝
 				}
 			}
 		);
@@ -301,7 +276,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 		menuItemHelp.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					// TODO: 顯示使用教學視窗
+					// TODO: 憿舐內雿輻��飛閬��
 				}
 			}
 		);			
@@ -314,8 +289,11 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 		menuItemConfig.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					// TODO: 打開更改設定之視窗
+					// TODO: ����閮剖�����
 					FrameSetting frameSetting =  new FrameSetting(); 
+					JPanelToShowBinaryTree tree = new JPanelToShowBinaryTree();
+					tree.insert(RTPServer.multiLine.root);
+				//	RTPServer.multiLine.showNode(RTPServer.multiLine.root);
 				}
 			}
 		);			
@@ -397,7 +375,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 				// parse data
 				String addrs[] = p2pIP.split(":"); // IP:port 
 				
-				// 與 P2P Server 建立連線，取得轉播 URI
+				// ��� P2P Server 撱箇���蝺���� URI
 				P2PTracker tracker; 
 				int prt = Integer.parseInt(addrs[1]); 
 				tracker = new P2PTracker(addrs[0], prt, URI, maxConnect, p2pID);  
@@ -471,7 +449,7 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		System.out.println("thread runing");
+		//System.out.println("thread runing");
 		
 	}
 

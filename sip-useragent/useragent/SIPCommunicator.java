@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import signalPacket.SDPPacket;
+
 /*		*
  * 	File:						useragent/SIPCommunicator.java
  * 
@@ -33,7 +35,9 @@ public class SIPCommunicator {
 		client = new Socket(); 
 		isa = new InetSocketAddress(address, port);
 		try {
+			System.out.println("gg hello");
 			client.connect(isa, 15000);
+			
 		}
 		catch (IOException e){
 			System.out.println("Socket Connection Failed. "); 
@@ -64,25 +68,22 @@ public class SIPCommunicator {
 	
 	public void register() throws IOException{
 	  	
-		// 發出註冊訊息	
+		
+		SDPPacket register = new SDPPacket();
 		
 		out = new BufferedOutputStream(client.getOutputStream());
-		out.write(("REGISTER," + userName).getBytes()); 
+		out.write((register.register("134.208.3.13", userName)).getBytes()); 
 		out.flush(); 
 		
-		//***** 暫時先直接連去註冊伺服器 ********
+		//***** ��������閮餃�撩�� ********
 		in = new BufferedInputStream(client.getInputStream());
+		if(in != null){
 		byte[] b = new byte[1024]; 
 		int length = in.read(b);
-		String data = new String(b, 0, length); 
+		String data ="" ;
+		data = new String(b, 0, length); 
 		System.out.println("The data I got: " + data); 
-		// **************/
-		
-		
-		// TODO: 收到 Proxy Server 的權限索取 response 後同意，再次發出註冊訊息
-		// TODO: 因應不同回應的處理
-					// 目前先假定不會有錯誤發生=口=
-			
+		}
 		
 		out.close(); 
 		out = null; 
@@ -96,8 +97,8 @@ public class SIPCommunicator {
 		out = new BufferedOutputStream(client.getOutputStream());
 		out.write(("INVITE," + user).getBytes()); 
 		out.flush(); 
-		
-		//***** 暫時先直接連去註冊伺服器 ********
+		System.out.println(this.address);
+		//***** ��������閮餃�撩�� ********
 		in = new BufferedInputStream(client.getInputStream());
 		byte[] b = new byte[1024]; 
 		int length = in.read(b);
@@ -123,7 +124,7 @@ public class SIPCommunicator {
 		out.write((sendReceive+"," + userName).getBytes()); 
 		out.flush(); 
 		System.out.println(sendReceive+" from senderReceiver-SIPComm");
-		//***** 向伺服器申請 要當sender or receiver  ********/
+		//***** ��撩���隢� 閬sender or receiver  ********/
 		in = new BufferedInputStream(client.getInputStream());
 		byte[] b = new byte[2048]; 
 		int length = in.read(b);

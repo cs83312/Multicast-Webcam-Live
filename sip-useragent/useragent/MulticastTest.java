@@ -9,38 +9,57 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import useragent.MulticastTest.Node;
 
 public class MulticastTest {
 	
-	
-	
-	
-	
 	public Node root;
 	public MulticastTest(String addr,int port){//server tree create
+		
+		//root is video provider(uploader) ,
+		//which doesn't need udp port because it doesn't download 
 		root = new Node(addr,port,-1);
 	}
 	
 	public void addNode(Node root,Node client){
 		
-		if(root.childNode.size()== 0){
+		if(root.childNode.size()< 2){
+			//root.childNode.get(0) is left tree,root.childNode.get(1) is right tree
 			Node e = client;
 			e.setParent(root);
 			root.childNode.add(e);
-			if(root.getUdpPort()!=-1)//redirection
+			if(root.getUdpPort()!=-1)//if node is not leaf of root ,then redirection
 				redirection(e);
 		}
 		else{
+			//!! here need modify to balance tree
+			//find  Suitable location
+			findGoodLocation(root);
+			//always find node in left of tree
 			addNode(root.childNode.get(0),client);
+			
+			
 			//redirection to leaf 
 		}
 	}
 	
+	private Node findGoodLocation(Node root){
+		
+		return null;
+	}
+	
+	
+	
 	public void showNode(Node root){
 		if(root.childNode.size()!=0){
+			if(root.childNode.get(0)!=null)
 			System.out.println(root.childNode.get(0).getTcpPort());
+			if(root.childNode.get(1)!=null)
+				System.out.println(root.childNode.get(1).getTcpPort());
+			
 			showNode(root.childNode.get(0));
+			if(root.childNode.get(1)!=null)
+			showNode(root.childNode.get(1));
+			
 		}
 	}
 	
@@ -67,31 +86,5 @@ public class MulticastTest {
 	}
 	
 	
-	public static class Node implements Serializable {
-		int redirection;
-		String address;
-		int udpPort;
-		int tcpPort;
-		Node parent;
-		Node rootProvider;
-		public ArrayList<Node> childNode;
-		public Node(String addr,int tcpPort,int udpPort){
-			this.address = addr;
-			this.tcpPort = tcpPort;
-			this.udpPort = udpPort;
-			this.parent = null;	
-			this.childNode = new ArrayList<Node>();
-			redirection=0;
-		}
-		
-		public void setRootProvider(String addr,int port){this.rootProvider = new Node(addr,port,0);}
-		public void setParent(Node parent){this.parent = parent;}
-		public Node getParent(){return this.parent;}
-		public String getAddress() {return address;}
-		public int getTcpPort() {return tcpPort;}
-		public int getUdpPort() {return udpPort;}
-		public void setDir(int dir){this.redirection = dir;}
-		public int getDir(){return this.redirection;}
-		
-	}
+	
 }
