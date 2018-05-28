@@ -3,47 +3,32 @@ package signalPacket;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
 import javax.sdp.SdpException;
-import javax.sdp.SdpFactory;
 import javax.sdp.SessionDescription;
 import javax.sip.InvalidArgumentException;
-import javax.sip.address.*;
 import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.FromHeader;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.ToHeader;
 import javax.sip.message.Request;
-import javax.sdp.*;
-import gov.nist.javax.sdp.SessionDescriptionImpl;
-import gov.nist.javax.sdp.fields.OriginField;
+import javax.sip.message.Response;
+
 import gov.nist.javax.sip.address.AddressFactoryImpl;
-import gov.nist.javax.sip.address.AddressImpl;
-import gov.nist.javax.sip.address.GenericURI;
-import gov.nist.javax.sip.address.SipUri;
-import gov.nist.javax.sip.header.*;
+import gov.nist.javax.sip.header.From;
 import gov.nist.javax.sip.message.MessageFactoryImpl;
-import gov.nist.javax.sip.message.SIPMessage;
 import gov.nist.javax.sip.message.SIPResponse;
-import gov.nist.javax.sdp.fields.*;
 
 public class SIPPacket implements Serializable{
 	
 	public Request request = null;
-	public SIPResponse response = null;
-	
+	public Response response = null;
+	public Boolean isIGnore;
 	public SIPPacket(){//default invite data  
-		SessionDescription sdpPacket;
-		try {
-			response = new SIPResponse();
-			sdpPacket = SDPCreate();	
-			} 
-		catch (SdpException e) {e.printStackTrace();}
+	
 
 	}
 	public void showTest(){
@@ -51,18 +36,7 @@ public class SIPPacket implements Serializable{
 	}
 	public SIPPacket(InetSocketAddress toRootTalk,InetSocketAddress fromClientTalk,InetSocketAddress fromClientDataTransmission){//default invite data  
 		
-		SessionDescription sdpPacket;
-		try {
-			
-			//build header
-			sdpPacket = SDPCreate();
-			SIPRequestCreate(toRootTalk,fromClientTalk,fromClientDataTransmission,sdpPacket);
-			
-			
-			} 
-		catch (ParseException e) {e.printStackTrace();} 
-		catch (InvalidArgumentException e) {e.printStackTrace();}
-		catch (SdpException e) {e.printStackTrace();}
+		
 		
 		//System.out.println("Customize sip header field......\n"+request);
 		//System.out.println("Customize sdp field\n"+sdpPacket);
@@ -86,19 +60,24 @@ public class SIPPacket implements Serializable{
 		 return requestBody;
 	}
 
-	public SessionDescription SDPCreate() throws SdpException{
+	public SessionDescription SDPCreate(String sessionName,String[] e_Mail,int mediaPort) throws SdpException{
 		Random ran = new Random();
 		SDPContent sdp = new SDPContent();
-		sdp.setV(1);
+		sdp.setV(0);
 		sdp.setO("chanfa", ran.nextInt(8888888),0,"in","IP4","134.208.3.13");
-		sdp.setS("music live");
+		sdp.setS(sessionName);
 		sdp.setI("this live is base on p2p stream");
         sdp.setU("134.208.3.13");
 		sdp.setC("IN","IP4","134.208.3.13");
-        sdp.setE("chanfa@gmail.com");	
+		if(e_Mail!=null)
+		for(int i=0;i<e_Mail.length;i++)
+        sdp.setE(e_Mail[i]);	
+		
         sdp.setP("0938089377");
+        sdp.setM("video", mediaPort, "AVP");
 		return sdp.getSessionDescription();
 		}
+
 	
 	
 	public Request SIPRequestCreate(InetSocketAddress toRootTalk,InetSocketAddress fromClientTalk,
@@ -106,12 +85,13 @@ public class SIPPacket implements Serializable{
 		throws ParseException, InvalidArgumentException{
 		MessageFactoryImpl  message = new MessageFactoryImpl();
 		SIPHeaderPacket sip = new SIPHeaderPacket();
-		
+		Random ran = new Random();
 		//set  sip header
 		sip.setUri("134.208.3.13");
 		sip.setCallidheader("f81d4fae-7dec-11d0-a765-00a0c91e6bf6@test.foo.bar.com");
 		sip.setCseq("CSeq", 312, "invite");
-		sip.setFrom("chanfa_call","sip:thisisfrom@"+fromClientTalk.getAddress().toString().replace("/","")+":"+Integer.toString(fromClientTalk.getPort()),"thisistest");
+		//+":"+Integer.toString(fromClientTalk.getPort())
+		sip.setFrom("sip:thisisfrom@"+fromClientTalk.getAddress().toString().replace("/","")+":"+Integer.toString(fromClientTalk.getPort()),"port");
         sip.setTo("sip:thisisto@"+toRootTalk.getAddress().toString().replaceAll("/","")+":"+Integer.toString(toRootTalk.getPort()));	
 	    sip.setVia("SIP/2.0/UDP","1contentType34.208.3.13","z9hG4bKkjshdyff",8080);
         sip.setMaxForwards(70);
@@ -127,39 +107,48 @@ public class SIPPacket implements Serializable{
 			SDPPacket.setMediaDescriptions(mediaInf);	
 		} catch (SdpException e) {e.printStackTrace();}
 		
-		
 		//the last two parameter is join sdp data in sip message,so this request is use for "invite" 
-		 request= message.createRequest(sip.getUri(),"invite", ( CallIdHeader)sip.getCallidheader(),(CSeqHeader)sip.getCseq(),
-				(FromHeader)sip.getFrom(),(ToHeader)sip.getTo(),sip.getViaList(), (MaxForwardsHeader)sip.getMaxForwards(),sip.getContentType(),SDPPacket);
+		 request= message.createRequest(sip.getUri(),"invite",sip.getCallidheader(),sip.getCseq(),sip.getFrom(),
+			sip.getTo(),sip.getViaList(), sip.getMaxForwards(),sip.getContentType(),SDPPacket);
 		
 		return request;
 	}
 	/*
-	 * it's override is use to refer
+	 * it's  use to refer
 	 * 
 	 */
-	public Request SIPRequestCreate(SIPHeaderPacket sipHeader,SessionDescription SDPPacket )
+	public Request SIPRequestCreate(SIPHeaderPacket sipHeader,String method,SessionDescription SDPPacket )
 		throws ParseException, InvalidArgumentException{
 		MessageFactoryImpl  message = new MessageFactoryImpl();
 
-		
-		
 		//the last two parameter is join sdp data in sip message,so this request is use for "invite" 
-		 request= message.createRequest(sipHeader.getUri(),"invite", ( CallIdHeader)sipHeader.getCallidheader(),(CSeqHeader)sipHeader.getCseq(),
-				(FromHeader)sipHeader.getFrom(),(ToHeader)sipHeader.getTo(),sipHeader.getViaList(), (MaxForwardsHeader)sipHeader.getMaxForwards(),sipHeader.getContentType(),null);
-		
+		if(SDPPacket == null)
+			request= message.createRequest(sipHeader.getUri(),method, ( CallIdHeader)sipHeader.getCallidheader(),
+					 (CSeqHeader)sipHeader.getCseq(),(FromHeader)sipHeader.getFrom(),
+					 (ToHeader)sipHeader.getTo(),sipHeader.getViaList(),
+					 (MaxForwardsHeader)sipHeader.getMaxForwards());
+		else{
+			
+		}
 		return request;
 	}
 	
-	
-	
-	public static void main(String args[]){
+	public Response SIPResponseCreate(SIPHeaderPacket header,int statusCode,SessionDescription SDPPacket ) throws ParseException{
+		MessageFactoryImpl  message = new MessageFactoryImpl();
 		
-		SIPPacket sip = new SIPPacket();
-		System.out.println(sip.request);
+		response =message.createResponse(statusCode,
+				header.getCallidheader(),
+				header.getCseq(),
+				header.getFrom(), 
+				header.getTo(),
+				header.getViaList(),
+				header.getMaxForwards());
 		
-		
+		return  response;
 	}
+	
+	
+
 
 
 }

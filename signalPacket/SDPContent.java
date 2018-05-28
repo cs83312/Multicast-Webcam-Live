@@ -1,11 +1,14 @@
 package signalPacket;
 
+import java.text.ParseException;
 import java.util.Random;
 import java.util.Vector;
 
 import javax.sdp.SdpException;
+import javax.sdp.SdpFactory;
 import javax.sdp.SessionDescription;
-
+import javax.sip.header.AllowHeader;
+import javax.sip.header.ContentTypeHeader;
 
 import gov.nist.javax.sdp.SessionDescriptionImpl;
 import gov.nist.javax.sdp.fields.ConnectionField;
@@ -18,6 +21,8 @@ import gov.nist.javax.sdp.fields.URIField;
 
 public class SDPContent {
 	SessionDescriptionImpl sdi;
+	SdpFactory sdp;
+	
 	ProtoVersionField v;
 	OriginField o;
 	Random ran;
@@ -28,6 +33,8 @@ public class SDPContent {
 	ConnectionField c;
 	Vector<String> e ;
 	Vector<String> p ;
+	ContentTypeHeader type;
+	
 
 	public SDPContent(){
 		this.sdi = new SessionDescriptionImpl();
@@ -46,26 +53,31 @@ public class SDPContent {
 	
 	public void setV(int v) throws SdpException {this.v.setVersion(v);}
 	public void setO(String username,int sessionID,int sessionVersion,String netType,String addrType,String address) throws SdpException {
+		
 		this.o.setUsername(username);
-		this.o.setSessionId(sessionID);
-		this.o.setSessionVersion(sessionVersion);
+		this.o.setSessId(sessionID);
+		this.o.setSessVersion(sessionVersion);
 		this.o.setNettype(netType);
-		this.o.setAddrtype(addrType);
+		this.o.setAddressType(addrType);
 		this.o.setAddress(address);
 	}
 	public void setS(String sessionName) {this.s.setSessionName(sessionName);}
 	public void setI(String information) {this.i.setInformation(information);}
 	public void setU(String url) {this.u.setURI(url);}
-	public void setE(String e_mails) {this.e.add(e_mails);}
-	public void setP(String phones) {this.p.add(phones);}
-	public void setM(String serviceType,int transportPort,String transportType){m.add(serviceType+" "+String.valueOf(transportPort)+" "+transportType);}
+	public void setE(String e_mails) {this.e.add("e="+e_mails+"\n");}
+	public void setP(String phones) {this.p.add("p="+phones+"\n");}
+	public void setM(String serviceType,int transportPort,String transportType){
+		this.m.add("m="+serviceType+" "+String.valueOf(transportPort)+" "+transportType+"\n");}
 	public void setC(String networkType,String addressType,String address) throws SdpException {
-		this.c.setNetworkType("IN");
-		this.c.setAddrType("IP4");
-		this.c.setAddress("134.208.3.13");
+		this.c.setNetworkType(networkType);
+		this.c.setAddrType(addressType);
+		this.c.setAddress(address);
 	}
 	
 	public SessionDescription getSessionDescription() throws SdpException {
+		
+		
+		
 		sdi.setVersion(v);	
 		sdi.setOrigin(o);
 		sdi.setSessionName(s);
@@ -75,7 +87,6 @@ public class SDPContent {
 		sdi.setEmails(e);
 		sdi.setPhones(p);
 		sdi.setMediaDescriptions(m);
-
 		return sdi;
 		}
 	

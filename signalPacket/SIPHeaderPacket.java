@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.sip.InvalidArgumentException;
-import javax.sip.address.Address;
-import javax.sip.address.URI;
+import javax.sip.header.FromHeader;
 
 import gov.nist.javax.sip.address.AddressFactoryImpl;
 import gov.nist.javax.sip.address.AddressImpl;
@@ -54,12 +53,15 @@ public class SIPHeaderPacket {
 		this.cseq.setSeqNumber(seqNumber);
 		this.cseq.setMethod(method);
 	}
-	public void setFrom(String headerName,String sip_Address,String tag) throws ParseException {
+	public void setFrom(String sip_Address,String tag) throws ParseException {
 		AddressFactoryImpl address = new AddressFactoryImpl();
 
-		this.from.setHeaderName(headerName);
+		
+		//this.from.setHeaderName(headerName);
 		this.from.setAddress(address.createAddress(sip_Address));
 		this.from.setTag(tag);
+		
+		
 	}
 	public void setTo(String sip_To) throws ParseException {
 		AddressFactoryImpl address = new AddressFactoryImpl();
@@ -77,7 +79,7 @@ public class SIPHeaderPacket {
 	public void setRefer(SipUri uri) {
 		AddressImpl addr = new AddressImpl();
 		
-		addr.setUser("sip:test");
+		
 		addr.setAddess(uri);
 		addr.setAddressType(1);
 		this.refer.setAddress(addr);
@@ -94,7 +96,7 @@ public class SIPHeaderPacket {
 
 	public CSeq getCseq() {return cseq;}
 
-	public From getFrom() {return from;}
+	public FromHeader getFrom() {return from;}
 
 	public To getTo() {return to;}
 
