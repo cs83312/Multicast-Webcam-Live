@@ -28,17 +28,22 @@ import javax.swing.Timer;
 import multicastTree.MulticastNode;
 import multicastTree.MulticastTree;
 import signalPacket.RTPpacket;
+import threadMethod.ClientMonitor;
 
 
 /*		*
  * 	File:						useragent/RTPConnecter.java
  * 
  * 	Use:						this rtp class is use for transform data which can't use for communication
- *                             rtp 只須按照自己的樹節點去傳輸資料，樹節點的修改再sipcommunicator完成，所以無需listener來檢測有誰拜訪
+ *                             rtp �����撌梁�邦蝭�暺�頛貉���邦蝭�暺�耨���ipcommunicator摰���隞亦��listener靘炎皜祆�狐��赤
  * 
  * 	Update Date: 	2015. 12. 24
  * */
 
+/**
+ * @author chanfa
+ *
+ */
 public class RTPConnecter extends Thread implements ActionListener {
 	
 	//server
@@ -63,11 +68,12 @@ public class RTPConnecter extends Thread implements ActionListener {
 	static BufferedReader RTSPBufferedReader;
 	static BufferedWriter RTSPBufferedWriter;
 	Timer timer;
-	
+	//Monitor
+	ClientMonitor monitor;
 	boolean serClientPort;
 	
 
-	static int FRAME_PERIOD = 100;
+	static int FRAME_PERIOD = 20;
 	
 	public RTPConnecter(){//server create one to one
 	
@@ -122,7 +128,7 @@ public class RTPConnecter extends Thread implements ActionListener {
 					rtp_packet.getpacket(packet_bits);
 					
 					/*
-					 * 透過群播樹傳資料
+					 * ��黎�璅孵鞈��
 					 */
 					
 					if(serClientPort){
@@ -165,8 +171,12 @@ public class RTPConnecter extends Thread implements ActionListener {
 			payload = new byte[rtp_packet.getpayload_length()];
 			rtp_packet.getpayload(payload);
 			RTPSend(payload);
-			//System.out.println("Got RTP packet with SeqNum # "+rtp_packet.getsequencenumber()+" TimeStamp "+rtp_packet.gettimestamp()+" ms, of type "+
-		//rtp_packet.getpayloadtype()+",flag"+rtp_packet.getFlag()+" rec packet"+payload.length);
+			
+			//set Monitor
+			
+		if(rtp_packet ==null)
+			System.out.println("miss packet");
+			
 				return ImageIO.read(new ByteArrayInputStream(payload));
 
 	}
@@ -179,6 +189,14 @@ public class RTPConnecter extends Thread implements ActionListener {
 	
 	public MulticastNode getClientNode(){return clientNode;}
 	//to listen the node from root or upper node
+
+	public ClientMonitor getMonitor() {
+		return monitor;
+	}
+
+	public void setMonitor(ClientMonitor monitor) {
+		this.monitor = monitor;
+	}
 
 	
 	

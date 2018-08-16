@@ -677,7 +677,7 @@ public class SIPP2P implements SipListener {
 		catch (SipException e) {e.printStackTrace();}
 	
 	}
-   public void processNotify(RequestEvent requestEvent){
+    public void processNotify(RequestEvent requestEvent){
 	   SipProvider provider = (SipProvider) requestEvent.getSource();
       Request notify = requestEvent.getRequest();
       try {
@@ -706,7 +706,7 @@ public class SIPP2P implements SipListener {
 
       }
   }
-  public void processAck(RequestEvent requestEvent){
+    public void processAck(RequestEvent requestEvent){
 		 try {
 	        //    System.out.println("shootme: got an ACK! start rtp stream");
 	         //   System.out.println("Dialog State = " + dialog.getState());
@@ -795,6 +795,7 @@ public class SIPP2P implements SipListener {
 		            		 newNode=  new MulticastNode(from.getAddress(),addr,
 		            				 Integer.valueOf(from.getAddress().getURI().toString().split(":")[2])
 		            				 ,RTPPort);
+		            		 
 		            		 rtpTrans.clientNode.childNode.add(newNode);
 		            		}
 		            	

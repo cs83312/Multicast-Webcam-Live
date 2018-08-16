@@ -40,7 +40,7 @@ public class JPanelToShowBinaryTree extends JPanel{
 		}
 		else
 		{
-			MulticastNode parent = node.getParent();
+			MulticastNode parent = node.getParent();//get width and height of parent
 			for(int i=0;i<tree.size();i++)
 			{
 				if(tree.get(i).node == parent){

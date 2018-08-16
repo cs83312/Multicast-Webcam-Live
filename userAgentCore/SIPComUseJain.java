@@ -180,7 +180,7 @@ public class SIPComUseJain implements SipListener{
 				5060, 
 				"tcp",
 				Request.REGISTER,
-		sdp.SDPCreate("",fromClientDataTransmission.getPort()));
+		sdp.SDPCreate("",null,fromClientDataTransmission.getPort()));
 		ClientTransaction tran = null;
 		
 		try {
@@ -212,7 +212,7 @@ public class SIPComUseJain implements SipListener{
 					"tcp",
 					Request.INVITE,
 					
-			sdp.SDPCreate("media stream",fromClientDataTransmission.getPort()));
+			sdp.SDPCreate("media stream",null,fromClientDataTransmission.getPort()));
 			System.out.println("get content\n\n"+request.toString());
 			ClientTransaction tran;
 			
@@ -415,7 +415,7 @@ public class SIPComUseJain implements SipListener{
 
        }
    }
- public void processAck(RequestEvent requestEvent,ServerTransaction serverTransaction){
+    public void processAck(RequestEvent requestEvent,ServerTransaction serverTransaction){
 		 try {
 	        //    System.out.println("shootme: got an ACK! start rtp stream");
 	         //   System.out.println("Dialog State = " + dialog.getState());
@@ -614,24 +614,24 @@ public class SIPComUseJain implements SipListener{
 	@Override
 	public void processDialogTerminated(DialogTerminatedEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("error");
 	}
 
 	@Override
 	public void processIOException(IOExceptionEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("error");
 	}
     
     @Override
 	public void processTimeout(TimeoutEvent arg0) {
 		// TODO Auto-generated method stub
-		
+    	System.out.println("error");
 	}
 	@Override
 	public void processTransactionTerminated(TransactionTerminatedEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("error");
 	}
 	
 	private void addToBinaryTree(){

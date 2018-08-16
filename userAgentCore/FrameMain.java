@@ -29,7 +29,9 @@ import javax.swing.*;
 
 import multicastTree.MulticastNode;
 import multicastTree.MulticastTree;
+import signalPacket.PacketMonitor;
 import somethingtest.canUsePort;
+import threadMethod.ClientMonitor;
 import useragent.ConfigureNetwork;
 import useragent.FrameSetting;
 import useragent.PlayerPanel;
@@ -69,12 +71,11 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	private JTextField FromIPAddr;
 	private JTextField ToIPAddr;
 	
+	PacketMonitor monitor;
+	private JTextField ChildNode;
+	
 public FrameMain(String username,int passWord){	
 		
-		
-		
-
-
 		//this.passWord = passWord;
 		frame = this;
 		this.setSize(1280, 720); 
@@ -84,8 +85,8 @@ public FrameMain(String username,int passWord){
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{14, 29, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		getContentPane().setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel_1 = new JLabel("New label");
@@ -412,6 +413,17 @@ public FrameMain(String username,int passWord){
 		gbc_btnLeave.gridy = 14;
 		getContentPane().add(btnLeave, gbc_btnLeave);
 		
+		ChildNode = new JTextField();
+		GridBagConstraints gbc_ChildNode = new GridBagConstraints();
+		gbc_ChildNode.gridheight = 5;
+		gbc_ChildNode.gridwidth = 6;
+		gbc_ChildNode.insets = new Insets(0, 0, 5, 5);
+		gbc_ChildNode.fill = GridBagConstraints.BOTH;
+		gbc_ChildNode.gridx = 20;
+		gbc_ChildNode.gridy = 17;
+		getContentPane().add(ChildNode, gbc_ChildNode);
+		ChildNode.setColumns(10);
+		
 		JLabel lblNewLabel_5 = new JLabel("upload");
 		GridBagConstraints gbc_lblNewLabel_5 = new GridBagConstraints();
 		gbc_lblNewLabel_5.insets = new Insets(0, 0, 5, 5);
@@ -460,7 +472,7 @@ public FrameMain(String username,int passWord){
 					setConfigure(true);
 					//set tree
 					 tree =  new MulticastTree("127.0.0.1",5062);
-					 //如果有註冊(statefull)
+					 //憒��酉���(statefull)
 					 if(sipP2P!=null){
 						 sipP2P.isServer = true;
 						 
@@ -497,7 +509,7 @@ public FrameMain(String username,int passWord){
 									 
 									 g2d.drawImage(img,0,0,null);
 									RTPServer.RTPSend(buffer);
-									Thread.sleep(10);
+									Thread.sleep(20);
 									
 								} catch (IOException | InterruptedException e) {
 									// TODO Auto-generated catch block
@@ -546,8 +558,10 @@ public FrameMain(String username,int passWord){
 					
 			
 									
-					
-					 canUsePort use = new canUsePort();
+					monitor = new PacketMonitor();
+					canUsePort use = new canUsePort();
+					 
+					 
 					try {
 						
 						//set From,To and FromRTPPort
@@ -555,22 +569,23 @@ public FrameMain(String username,int passWord){
 						
 						sipP2P = new SIPP2P(FromIPAddr.getText(),TalkfromClient.getPort(),userName.getText(),transStateField);
 						System.out.println(TalkfromClient.getPort());
-						sipP2P.setNode(new MulticastNode(null,FromIPAddr.getText(),TalkfromClient.getPort(),TransmissionfromClientData.getPort()));
+						
+						 /*
+						   * create  rtp 
+						   */
+							rtpRecv =new RTPConnecter(FromIPAddr.getText(),TransmissionfromClientData.getPort());
+							sipP2P.setRtpTrans(rtpRecv);
+						
+						
 						//invite
 						sipP2P.invite(ToField.getText(),TalkfromClient,TransmissionfromClientData);
 
-					  /*
-					   * create local rtp listener 
-					   */
-					    //建立傳輸port
-						rtpRecv =new RTPConnecter(FromIPAddr.getText(),TransmissionfromClientData.getPort());
-						sipP2P.setRtpTrans(rtpRecv);
-					    
+					 
 						
 					
 					} catch (SdpException e1) {e1.printStackTrace();}
 					
-					final RTPConnecter clientRecv = rtpRecv;
+					final RTPConnecter clientRTP = rtpRecv;
 					
 				
 					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
@@ -578,13 +593,23 @@ public FrameMain(String username,int passWord){
 						
 						@Override
 						public void run(){
+							
+							
+							ClientMonitor clientMT = new ClientMonitor(sipP2P,ChildNode);
+							clientMT.start();
+							rtpRecv.setMonitor(clientMT);				
 							while(true){
 								
 								try {
-									g2d.drawImage(clientRecv.RTPreceive(),0,0,null);
-									Thread.sleep(10);
+									g2d.drawImage(clientRTP.RTPreceive(),0,0,null);
+									
+									
+									Thread.sleep(20);
 								} catch (InterruptedException | IOException e) {e.printStackTrace();}
 							
+								
+							
+								
 									
 							}
 							
@@ -622,7 +647,7 @@ public FrameMain(String username,int passWord){
 		menuItemHelp.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					// TODO: 憿舐內雿輻��飛閬��
+					// TODO: ����頛魂�蕭嚙踐��謘橘蕭嚙�
 				}
 			}
 		);			
@@ -635,7 +660,7 @@ public FrameMain(String username,int passWord){
 		menuItemConfig.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					// TODO: ����閮剖�����
+					
 					FrameSetting frameSetting =  new FrameSetting(); 
 					JPanelToShowBinaryTree tree = new JPanelToShowBinaryTree();
 					

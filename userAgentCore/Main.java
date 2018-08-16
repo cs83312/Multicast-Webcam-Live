@@ -78,9 +78,9 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		
-		FileSetting fileSetting = new FileSetting("usersetting");	
+		FileSetting fileSetting = new FileSetting ("usersetting");	
 		// write the setting file
-		FrameSetting setting = new FrameSetting(); 
+		FrameSetting setting = new FrameSetting();
 		Thread thread = new Thread(setting); 
 		thread.start(); 
 		
