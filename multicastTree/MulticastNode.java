@@ -22,6 +22,7 @@ public class MulticastNode implements Serializable {
 	/*
 	 * three parameter is include ¡iaddress ¡B sipTcpPort ¡B rtpUdpPort¡j
 	 */
+	
 	public MulticastNode(Address sipURI,String addr,int tcpPort,int udpPort){
 		this.sipURI = sipURI;
 		this.address = addr;
