@@ -73,6 +73,8 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	
 	PacketMonitor monitor;
 	private JTextField ChildNode;
+	private JTextField balanceURI;
+	private JTextField balanceTargetURI;
 	
 public FrameMain(String username,int passWord){	
 		
@@ -85,8 +87,8 @@ public FrameMain(String username,int passWord){
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{14, 29, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		getContentPane().setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel_1 = new JLabel("New label");
@@ -256,7 +258,7 @@ public FrameMain(String username,int passWord){
 		getContentPane().add(To, gbc_To);
 		
 		ToField = new JTextField();
-		ToField.setText("sip:Alice@127.0.0.1:5060");
+		ToField.setText("sip:Alice@127.0.0.1:5062");
 		ToField.setColumns(10);
 		GridBagConstraints gbc_ToField = new GridBagConstraints();
 		gbc_ToField.insets = new Insets(0, 0, 5, 5);
@@ -264,39 +266,6 @@ public FrameMain(String username,int passWord){
 		gbc_ToField.gridx = 18;
 		gbc_ToField.gridy = 8;
 		getContentPane().add(ToField, gbc_ToField);
-		
-		JButton btnInvite = new JButton("invite");
-		btnInvite.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					canUsePort use = new canUsePort();
-					//set From,To and FromRTPPort
-					if(!portIsSet){
-					
-					TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort());
-					TransmissionfromClientData = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort()+1);
-					
-					clientTcpPort.setText(String.valueOf(TalkfromClient.getPort()));
-					clientUdpPort.setText(String.valueOf(TransmissionfromClientData.getPort()));
-					FromField.setText("SIP:"+userName.getText()+"@"+TalkfromClient.getHostString()+":"+clientTcpPort.getText());
-					
-				//	startSIP = new SIPComUseJain(FromIPAddr.getText(),TalkfromClient.getPort(),userName.getText(),transStateField);
-					portIsSet=true;
-					}
-					TalktoRoot = new InetSocketAddress(ToIPAddr.getText(),5060);
-					//-----------------------------------------------------
-					
-					//create sip
-					
-					//invite
-					//startSIP.invite(ToField.getText(),TalkfromClient,TransmissionfromClientData);
-				   // startSIP.setNode(new MulticastNode("",FromIPAddr.getText(),TalkfromClient.getPort(),TransmissionfromClientData.getPort()));
-				
-				} catch (IOException  e1) {e1.printStackTrace();}
-			}
-			
-		});
 		
 		JButton btnReigster = new JButton("reigster");
 		btnReigster.addMouseListener(new MouseAdapter() {
@@ -357,6 +326,46 @@ public FrameMain(String username,int passWord){
 		gbc_btnReigster.gridy = 11;
 		getContentPane().add(btnReigster, gbc_btnReigster);
 		
+		JButton btnInvite = new JButton("invite");
+		btnInvite.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					canUsePort use = new canUsePort();
+					//set From,To and FromRTPPort
+					if(!portIsSet){
+					
+					TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort());
+					TransmissionfromClientData = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort()+1);
+					
+					clientTcpPort.setText(String.valueOf(TalkfromClient.getPort()));
+					clientUdpPort.setText(String.valueOf(TransmissionfromClientData.getPort()));
+					FromField.setText("SIP:"+userName.getText()+"@"+TalkfromClient.getHostString()+":"+clientTcpPort.getText());
+					
+				//	startSIP = new SIPComUseJain(FromIPAddr.getText(),TalkfromClient.getPort(),userName.getText(),transStateField);
+					portIsSet=true;
+					}
+					TalktoRoot = new InetSocketAddress(ToIPAddr.getText(),5060);
+					//-----------------------------------------------------
+					
+					//create sip
+					
+					//invite
+					//startSIP.invite(ToField.getText(),TalkfromClient,TransmissionfromClientData);
+				   // startSIP.setNode(new MulticastNode("",FromIPAddr.getText(),TalkfromClient.getPort(),TransmissionfromClientData.getPort()));
+				
+				} catch (IOException  e1) {e1.printStackTrace();}
+			}
+			
+		});
+		
+		GridBagConstraints gbc_btnInvite = new GridBagConstraints();
+		gbc_btnInvite.fill = GridBagConstraints.BOTH;
+		gbc_btnInvite.insets = new Insets(0, 0, 5, 5);
+		gbc_btnInvite.gridx = 17;
+		gbc_btnInvite.gridy = 12;
+		getContentPane().add(btnInvite, gbc_btnInvite);
+		
 		JButton btnCreateprovider = new JButton("createProvider");
 		GridBagConstraints gbc_btnCreateprovider = new GridBagConstraints();
 		gbc_btnCreateprovider.fill = GridBagConstraints.HORIZONTAL;
@@ -364,20 +373,6 @@ public FrameMain(String username,int passWord){
 		gbc_btnCreateprovider.gridx = 18;
 		gbc_btnCreateprovider.gridy = 12;
 		getContentPane().add(btnCreateprovider, gbc_btnCreateprovider);
-		
-		GridBagConstraints gbc_btnInvite = new GridBagConstraints();
-		gbc_btnInvite.fill = GridBagConstraints.BOTH;
-		gbc_btnInvite.insets = new Insets(0, 0, 5, 5);
-		gbc_btnInvite.gridx = 17;
-		gbc_btnInvite.gridy = 13;
-		getContentPane().add(btnInvite, gbc_btnInvite);
-		
-		JButton btnConnecttoprovider = new JButton("connectToProvider");
-		GridBagConstraints gbc_btnConnecttoprovider = new GridBagConstraints();
-		gbc_btnConnecttoprovider.insets = new Insets(0, 0, 5, 5);
-		gbc_btnConnecttoprovider.gridx = 18;
-		gbc_btnConnecttoprovider.gridy = 13;
-		getContentPane().add(btnConnecttoprovider, gbc_btnConnecttoprovider);
 		
 		JButton btnLeave = new JButton("Leave");
 		btnLeave.addMouseListener(new MouseAdapter() {
@@ -391,29 +386,81 @@ public FrameMain(String username,int passWord){
 		});
 		
 		JButton btnPausingStream = new JButton("Pausing Stream");
-
-		btnPausingStream.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				System.out.println("Pausing Stream");
-				if(sipP2P!=null){					
-					sipP2P.PauseInvite();			
-			}
+		btnPausingStream.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		GridBagConstraints gbc_btnPausingStream = new GridBagConstraints();
-		gbc_btnPausingStream.insets = new Insets(0, 0, 5, 5);
-		gbc_btnPausingStream.gridx = 17;
-		gbc_btnPausingStream.gridy = 14;
-		getContentPane().add(btnPausingStream, gbc_btnPausingStream);
+		
+				btnPausingStream.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						System.out.println("Pausing Stream");
+						if(sipP2P!=null){					
+							sipP2P.PauseInvite();			
+					}
+					}
+				});
+				GridBagConstraints gbc_btnPausingStream = new GridBagConstraints();
+				gbc_btnPausingStream.insets = new Insets(0, 0, 5, 5);
+				gbc_btnPausingStream.gridx = 17;
+				gbc_btnPausingStream.gridy = 13;
+				getContentPane().add(btnPausingStream, gbc_btnPausingStream);
 		GridBagConstraints gbc_btnLeave = new GridBagConstraints();
 		gbc_btnLeave.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnLeave.insets = new Insets(0, 0, 5, 5);
 		gbc_btnLeave.gridx = 18;
-		gbc_btnLeave.gridy = 14;
+		gbc_btnLeave.gridy = 13;
 		getContentPane().add(btnLeave, gbc_btnLeave);
 		
+		JButton btnConnecttoprovider = new JButton("RootSetBalance");
+		btnConnecttoprovider.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				System.out.println("FrameMain: balanceTree");
+				if(sipP2P!=null){	
+					if(!balanceURI.getText().isEmpty() &&!balanceTargetURI.getText().isEmpty()){
+						String uri = balanceURI.getText();
+						String specAddr = uri.split("@")[1].split(":")[0];
+						int specPort = Integer.valueOf(uri.split("@")[1].split(":")[1]);
+						System.out.println(specAddr+"and "+specPort);
+						sipP2P.balanceRefer(specAddr, specPort,balanceTargetURI.getText());
+						
+					}
+							
+			}
+				
+			}
+		});
+		GridBagConstraints gbc_btnConnecttoprovider = new GridBagConstraints();
+		gbc_btnConnecttoprovider.fill = GridBagConstraints.VERTICAL;
+		gbc_btnConnecttoprovider.gridheight = 2;
+		gbc_btnConnecttoprovider.insets = new Insets(0, 0, 5, 5);
+		gbc_btnConnecttoprovider.gridx = 17;
+		gbc_btnConnecttoprovider.gridy = 14;
+		getContentPane().add(btnConnecttoprovider, gbc_btnConnecttoprovider);
+		
+		balanceURI = new JTextField();
+		balanceURI.setText("sip:a@134.208.3.13:port");
+		GridBagConstraints gbc_balanceURI = new GridBagConstraints();
+		gbc_balanceURI.insets = new Insets(0, 0, 5, 5);
+		gbc_balanceURI.fill = GridBagConstraints.HORIZONTAL;
+		gbc_balanceURI.gridx = 18;
+		gbc_balanceURI.gridy = 14;
+		getContentPane().add(balanceURI, gbc_balanceURI);
+		balanceURI.setColumns(10);
+		
+		balanceTargetURI = new JTextField();
+		balanceTargetURI.setText("sip:b@134.208.3.13:port");
+		GridBagConstraints gbc_balanceTargetURI = new GridBagConstraints();
+		gbc_balanceTargetURI.insets = new Insets(0, 0, 5, 5);
+		gbc_balanceTargetURI.fill = GridBagConstraints.HORIZONTAL;
+		gbc_balanceTargetURI.gridx = 18;
+		gbc_balanceTargetURI.gridy = 15;
+		getContentPane().add(balanceTargetURI, gbc_balanceTargetURI);
+		balanceTargetURI.setColumns(10);
+		
 		ChildNode = new JTextField();
+		ChildNode.setText("child node");
 		GridBagConstraints gbc_ChildNode = new GridBagConstraints();
 		gbc_ChildNode.gridheight = 5;
 		gbc_ChildNode.gridwidth = 6;
@@ -478,7 +525,7 @@ public FrameMain(String username,int passWord){
 						 
 					 }
 					 else
-						 sipP2P = new SIPP2P(FromIPAddr.getText(),5060,userName.getText(),transStateField,true);
+						 sipP2P = new SIPP2P(FromIPAddr.getText(),5062,userName.getText(),transStateField,true);
 					 
 					 sipP2P.setTree(tree);
 					final Graphics2D g2d = (Graphics2D)frame.getGraphics();
@@ -576,6 +623,11 @@ public FrameMain(String username,int passWord){
 							rtpRecv =new RTPConnecter(FromIPAddr.getText(),TransmissionfromClientData.getPort());
 							sipP2P.setRtpTrans(rtpRecv);
 						
+						//Monitor
+						ClientMonitor clientMT = new ClientMonitor(sipP2P,ChildNode);
+						clientMT.start();
+						sipP2P.setMonitor(clientMT);//invite end to end delay
+						rtpRecv.setMonitor(clientMT);//packet lost
 						
 						//invite
 						sipP2P.invite(ToField.getText(),TalkfromClient,TransmissionfromClientData);
@@ -593,17 +645,11 @@ public FrameMain(String username,int passWord){
 						
 						@Override
 						public void run(){
-							
-							
-							ClientMonitor clientMT = new ClientMonitor(sipP2P,ChildNode);
-							clientMT.start();
-							rtpRecv.setMonitor(clientMT);				
+																	
 							while(true){
 								
 								try {
-									g2d.drawImage(clientRTP.RTPreceive(),0,0,null);
-									
-									
+									g2d.drawImage(clientRTP.RTPreceive(),0,0,null);								
 									Thread.sleep(20);
 								} catch (InterruptedException | IOException e) {e.printStackTrace();}
 							
@@ -666,7 +712,7 @@ public FrameMain(String username,int passWord){
 					
 					FrameMain.this.tree.showNode(FrameMain.this.tree.root);
 					
-					tree.insert(FrameMain.this.tree.root);
+					tree.insert(FrameMain.this.tree.root,-1);
 					
 				//	RTPServer.multiLine.showNode(RTPServer.multiLine.root);
 				}

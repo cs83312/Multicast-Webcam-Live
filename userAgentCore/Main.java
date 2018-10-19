@@ -1,4 +1,4 @@
-package userAgentCore;
+ package userAgentCore;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -66,7 +66,7 @@ public class Main {
 				
 			}
 			else 
-				return null;  
+				return null;   
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return null; 
@@ -94,10 +94,7 @@ public class Main {
 		else {
 			setInfo();  
 		}
-				
-			
-		  
-
+		
 
 	/*	fileSetting.setMaxConnect(maxConnect); 
 		fileSetting.setUserName(userName); 

@@ -68,6 +68,7 @@ import multicastTree.MulticastNode;
 import multicastTree.MulticastTree;
 import signalPacket.SIPHeaders;
 import signalPacket.SIPPacket;
+import threadMethod.ClientMonitor;
 import useragent.AccountManagerImpl;
 
 public class SIPP2P implements SipListener {
@@ -108,7 +109,9 @@ public class SIPP2P implements SipListener {
     //UI 
     private JTextArea stateLabel;
     private int testCounter=0;
-    
+
+	//Monitor
+    ClientMonitor monitor;
     //test
     String tags;
     
@@ -117,6 +120,7 @@ public class SIPP2P implements SipListener {
 		this.userID = userID;
 		this.isServer = isServer;
 		this.ip = addr;
+		this.port = port;
 		stateLabel = transState;
 		initComponents();
 		
@@ -173,7 +177,7 @@ public class SIPP2P implements SipListener {
 					Integer.valueOf(toSipUID.split(":")[2]), 
 					"tcp",
 					Request.INVITE,	
-			sdp.SDPCreate("live Steam",null,fromClientDataTransmission.getPort())
+			sdp.SDPCreate("live Steam","",fromClientDataTransmission.getPort())
 			);
 			
 			
@@ -186,7 +190,7 @@ public class SIPP2P implements SipListener {
 				rtpTrans.clientNode.setParent(toSipUID.split(":")[1],Integer.valueOf(toSipUID.split(":")[2]));
 				rtpTrans.clientNode.setRootProvider(toSipUID.split(":")[1],Integer.valueOf(toSipUID.split(":")[2]));
 			
-				System.out.println("READY send invite\n"+request.toString());
+				System.out.println("***** READY send invite ******\n"+request.toString());
 			}
 			
 			try {this.sipProvider.sendRequest(request);} 
@@ -216,6 +220,76 @@ public class SIPP2P implements SipListener {
 		catch (SipException e) {e.printStackTrace();}
 		
 	}
+	public void balanceRefer(String specAddr,int specPort,String targetURI){
+		if(isServer){
+			Request request ;
+			SIPHeaders header = new SIPHeaders(this.sipProvider);
+			SIPPacket sdp = new SIPPacket();	
+			MulticastNode parentNode=null,node=null,tranNode = null;
+			String tarAddr=targetURI.split("@")[1].split(":")[0];;
+			int tarPort = Integer.valueOf(targetURI.split("@")[1].split(":")[1]);;
+			
+			if(tree.searchSpecNode(tree.root, specAddr, specPort)!=null && 
+					tree.searchSpecNode(tree.root, tarAddr, tarPort)!=null	){
+				
+				node = tree.searchSpecNode(tree.root, specAddr, specPort);
+				parentNode = node.getParent();
+				tranNode = tree.searchSpecNode(tree.root, tarAddr, tarPort);
+
+				//logic branch
+	
+				
+				//step1 remove
+				parentNode.childNode.remove(node);
+				node.setParent(tranNode.getAddress(),tranNode.getTcpPort());
+				tranNode.childNode.add(node);
+				
+				
+					referTo(tranNode,node.getAddress(),node.getTcpPort());
+					
+				
+			}
+			else
+				System.out.println("find no node");
+		}
+		
+	}
+	public void referTo(MulticastNode notRootLeaf,String toIP,int toPort){
+		Request refer;
+		
+		SIPHeaders header = new SIPHeaders(sipProvider);
+		CallID call = new CallID();
+		To to = new To();
+		Address addressTo;
+		try {
+			addressTo = this.addressFactory.createAddress("sip:a@"+toIP+":"+toPort);
+			to.setAddress(addressTo);
+		       
+		       refer = header.createAck(
+		     		   this.ip,
+		     		   this.port,  	            		   
+		     		   to.getAddress().getURI().toString(),
+		     		   to.getAddress().getURI().toString().split(":")[1], 
+		     		   Integer.valueOf(to.getAddress().getURI().toString().split(":")[2]), 
+		     		   protocol, 
+		     		  call,
+		     		   Request.REFER);
+				ReferTo referTo = new ReferTo();
+				referTo.setAddress(notRootLeaf.getSipURI());
+				refer.addHeader(referTo);
+				AllowHeader allowHeader = this.headerFactory.createAllowHeader("INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, NOTIFY");
+				refer.addHeader(allowHeader);
+		        EventHeader event = this.headerFactory.createEventHeader("Refer");
+		        refer.addHeader(event);
+		         System.out.println("Refer Dialog =\n " + refer);
+		         
+		         this.sipProvider.sendRequest(refer);	      
+		} catch (ParseException | SipException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	
 	public void PauseInvite(){
 		Request request ;
@@ -235,7 +309,7 @@ public class SIPP2P implements SipListener {
 					parentPort, 
 					"tcp",
 					Request.INVITE,	
-			sdp.SDPCreate("Pausing Stream",null,rtpTrans.clientNode.getUdpPort())
+			sdp.SDPCreate("Pausing Stream","",rtpTrans.clientNode.getUdpPort())
 			);
 			this.sipProvider.sendRequest(request);
 			
@@ -337,10 +411,15 @@ public class SIPP2P implements SipListener {
  			             String.valueOf(removeNode.getParent().getTcpPort());
  			  
  			  
- 			  
+ 			  //save remove_node's leaf node
  			  for(int count=0;count<removeNode.childNode.size();count++){
  				 saveLeafNode[count] = String.valueOf(count)+"@"+removeNode.childNode.get(count).getAddress()+":"+
  			 			  String.valueOf(removeNode.childNode.get(count).getTcpPort());	
+ 			  
+ 			  //logic tree transform 
+ 				 
+ 				 
+ 				 
  			  }
  				  
  		
@@ -377,7 +456,7 @@ public class SIPP2P implements SipListener {
 			//暫時用invite 去中斷連線
 			
 			try {
-				SessionDescription newSDP = SDP.SDPCreate("Leave Node", null, 0);
+				SessionDescription newSDP = SDP.SDPCreate("Leave Node", "", 0);
 				invite("sip:"+this.ip+":"+String.valueOf(this.port),
 						"sip:"+rtpTrans.clientNode.getParent().getAddress()+":"+String.valueOf(rtpTrans.clientNode.getParent().getTcpPort()),
 						newSDP);
@@ -397,7 +476,7 @@ public class SIPP2P implements SipListener {
 				//防止自己傳給自己
 				if(!ports.matches(String.valueOf(this.port))){
 					try {
-						SessionDescription newSDP = SDP.SDPCreate(s, null, 0);
+						SessionDescription newSDP = SDP.SDPCreate(s,"", 0);
 						invite("sip:"+this.ip+":"+String.valueOf(this.port),
 								toURI,
 								newSDP);
@@ -411,10 +490,18 @@ public class SIPP2P implements SipListener {
 			
 			
 			}
-		else if(sdp.getSessionName().getValue().matches("Replace Stream")== true){
+		else if(sdp.getSessionName().getValue().matches("Replace Stream")== true){//收到新的父結點
+			
+			//delay 0.5s
+			
+			Thread.sleep(500);
+			rtpTrans.isTransform=true;
+			rtpTrans.ID = this.userID;
+			rtpTrans.parentID = from.getAddress().getURI().toString().split(":")[1]+
+					from.getAddress().getURI().toString().split(":")[2];
 			//step 3
 			//修改父結點
-			System.out.println(from);
+			System.out.println("replace stream\r\n"+from+"and\r\n"+rtpTrans.isTransform);
 			/*this.node.setParent(from.getAddress().getURI().toString().split(":")[1],
 					Integer.valueOf(from.getAddress().getURI().toString().split(":")[2]));*/
 			
@@ -422,24 +509,19 @@ public class SIPP2P implements SipListener {
 			//response ok include rtp sdp data
 			
 			try {
+				
 				ContentType contentType= new ContentType();
 			    contentType.setContentType("application","sdp");
 			    SIPPacket SDP = new SIPPacket();
-			    SessionDescription newSDP = SDP.SDPCreate("Replcae Stream", null, rtpTrans.getClientPort());
+			    SessionDescription newSDP = SDP.SDPCreate("Replcae Stream","", rtpTrans.getClientPort());
 				Response ok = 
 				messageFactory.createResponse(Response.OK,request,contentType,newSDP);
 				sipProvider.sendResponse(ok);
-				
-				
-				
-				
+							
 			} catch (ParseException | SdpException | SipException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			
-			
-			
+			}		
 		}
 		else if(sdp.getSessionName().getValue().matches("Leave Node")== true){
 			System.out.println("in the "+this.port+"leave node"+from);
@@ -447,11 +529,10 @@ public class SIPP2P implements SipListener {
 			// search node which is leave node
 			if(rtpTrans.clientNode.childNode.size()!=0){
 				
-			
-			for(MulticastNode n:rtpTrans.clientNode.childNode){
+			// go to find which want to remove node
+			for(MulticastNode n:rtpTrans.clientNode.childNode){	
 				
-				System.out.println("after delete"+n);
-				
+				System.out.println("after delete"+n);		
 				
 			}
 			for(MulticastNode n:rtpTrans.clientNode.childNode){
@@ -459,10 +540,9 @@ public class SIPP2P implements SipListener {
 				if(n.getTcpPort() == removePort){
 					rtpTrans.clientNode.childNode.remove(n);
 					break;
-				}
-				
-				
+				}		
 			}
+			
 			}
 			else{
 				System.out.println("zero child node");
@@ -473,7 +553,7 @@ public class SIPP2P implements SipListener {
 				ContentType contentType= new ContentType();
 			    contentType.setContentType("application","sdp");
 			    SIPPacket SDP = new SIPPacket();
-			    SessionDescription newSDP = SDP.SDPCreate("Leave Node", null, rtpTrans.getClientPort());
+			    SessionDescription newSDP = SDP.SDPCreate("Leave Node","", rtpTrans.getClientPort());
 				ok = messageFactory.createResponse(Response.OK,request,contentType,newSDP);
 				sipProvider.sendResponse(ok);
 			} catch (ParseException | SipException | SdpException e) {
@@ -505,16 +585,68 @@ public class SIPP2P implements SipListener {
 		            ok.addHeader(contact);
 		            sipProvider.sendResponse(ok);
 		            
-		            tags = from.getTag();
+		             tags = from.getTag();
 		            
 		        } catch (Exception ex) {
 		            ex.printStackTrace();
 		           // junit.framework.TestCase.fail("Exit JVM");
 		        }
 		   }
+		else if(sdp.getSessionName().getValue().matches("Tree Balance")== true){
+			System.out.println("got balance from root!!");
+			
+			Vector<EMail> e;
+			e = sdp.getEmails(true);
+			System.out.println("and get target email:"+e);	
+			String addr = e.toString().split("@")[1].split(":")[0];
+			String port = e.toString().split("@")[1].split(":")[1];
+			
+		
+            
+			
+			MulticastNode node = rtpTrans.clientNode.getParent();
+			SIPPacket toSdp = new SIPPacket();	
+			try {
+				//response ok to root
+				Address contactAddress = this.addressFactory.createAddress("sip:"+userID+"@" + "134.208.3.13"+ ":" + 5062);
+	            ContactHeader contact = this.headerFactory.createContactHeader(contactAddress);   
+	            Response ok = messageFactory.createResponse(Response.OK,request);
+	            ok.addHeader(contact);
+	            sipProvider.sendResponse(ok);
+				
+				
+				
+	            if(!String.valueOf(node.getTcpPort()).matches("5062")){// 如果不是root
+	            	//step 1 send bye to parent root
+	            	this.invite("sip:"+this.ip+":"+String.valueOf(this.port),
+						"sip:"+node.getAddress()+":"+String.valueOf(node.getTcpPort()),
+						toSdp.SDPCreate("Leave Node","",-1));
+	            	
+	            	//step2 invit to target
+	            	this.invite("sip:"+this.ip+":"+String.valueOf(this.port),
+							"sip:"+addr+":"+port,
+							toSdp.SDPCreate("Tree Add","",-1));
+	            	System.out.println("debug!!!!!!!!!!!!!!!!!!!!!!!");
+	            }
+			} catch (SdpException | ParseException | SipException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		}
+		else if(sdp.getSessionName().getValue().matches("Tree Add")== true){
+				
+			System.out.println("got tree add from : "+from);
+			
+			
+			
+		}
 	} catch (SdpParseException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
+	} catch (InterruptedException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
 	}  
   
    }
@@ -1010,5 +1142,9 @@ public class SIPP2P implements SipListener {
 	public RTPConnecter getRtpTrans() {return rtpTrans;}
 	public void setRtpTrans(RTPConnecter rtpTrans) {this.rtpTrans = rtpTrans;}
 	public void setUDPPort(int udp){this.UDPPort = udp;}
+    
+    public ClientMonitor getMonitor() {return monitor;}
+
+	public void setMonitor(ClientMonitor monitor) {this.monitor = monitor;}
     
 }

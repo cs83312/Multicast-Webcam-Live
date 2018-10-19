@@ -20,6 +20,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
+import java.time.Clock;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -68,9 +70,13 @@ public class RTPConnecter extends Thread implements ActionListener {
 	static BufferedReader RTSPBufferedReader;
 	static BufferedWriter RTSPBufferedWriter;
 	Timer timer;
+	
+	boolean serClientPort;
 	//Monitor
 	ClientMonitor monitor;
-	boolean serClientPort;
+	public boolean isTransform;
+	public String parentID;
+	public String ID;
 	
 
 	static int FRAME_PERIOD = 20;
@@ -160,9 +166,31 @@ public class RTPConnecter extends Thread implements ActionListener {
 		
 			byte[] buf= new byte[64000];
 			byte[] payload;
-			RTPpacket rtp_packet;
+			RTPpacket rtp_packet=null;
 			
-		
+			//delay time
+			monitor.delayTime = monitor.nowTime -monitor.preTime;
+			
+			if(monitor.delayTime>400.0f){ //ms
+				System.out.println("delay: " + monitor.delayTime);
+			}
+			//packet loss
+			monitor.lossPacketNumber = monitor.nowFrame - monitor.preFrame;
+			if(monitor.lossPacketNumber>1){ //frame
+				System.out.println("loss seq: " + monitor.lossPacketNumber);
+			}
+			if(monitor.delayTime>400.0f ||monitor.lossPacketNumber>1){
+			monitor.record.putdelayData(this.parentID,this.ID, 
+					monitor.delayTime, 
+					monitor.lossPacketNumber, 
+					isTransform);
+			if(isTransform)
+			isTransform = false;
+			}
+			
+		    monitor.preTime = monitor.nowTime;
+		    monitor.preFrame = monitor.nowFrame;
+		    
 			recvClient = new DatagramPacket(buf,buf.length);
 			RTPSocket.receive(recvClient);
 			rtp_packet = new RTPpacket(recvClient.getData(), recvClient.getLength());
@@ -172,10 +200,10 @@ public class RTPConnecter extends Thread implements ActionListener {
 			rtp_packet.getpayload(payload);
 			RTPSend(payload);
 			
-			//set Monitor
 			
-		if(rtp_packet ==null)
-			System.out.println("miss packet");
+			monitor.nowTime =System.currentTimeMillis();
+			monitor.nowFrame = rtp_packet.getsequencenumber();
+
 			
 				return ImageIO.read(new ByteArrayInputStream(payload));
 
