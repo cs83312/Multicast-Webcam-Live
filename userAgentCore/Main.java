@@ -65,7 +65,7 @@ public class Main {
 				return sipAddrs;  
 				
 			}
-			else 
+			else   
 				return null;   
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

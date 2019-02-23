@@ -171,19 +171,21 @@ public class RTPConnecter extends Thread implements ActionListener {
 			//delay time
 			monitor.delayTime = monitor.nowTime -monitor.preTime;
 			
-			if(monitor.delayTime>400.0f){ //ms
+			if(monitor.delayTime>50.0f){ //ms
 				System.out.println("delay: " + monitor.delayTime);
 			}
 			//packet loss
 			monitor.lossPacketNumber = monitor.nowFrame - monitor.preFrame;
 			if(monitor.lossPacketNumber>1){ //frame
-				System.out.println("loss seq: " + monitor.lossPacketNumber);
+				System.out.println("now fr:"+monitor.nowFrame+"pre fr:"+monitor.preFrame+"loss seq: " + monitor.lossPacketNumber);
 			}
-			if(monitor.delayTime>400.0f ||monitor.lossPacketNumber>1){
+			if(monitor.delayTime>50.0f || monitor.lossPacketNumber>10){
+				
 			monitor.record.putdelayData(this.parentID,this.ID, 
 					monitor.delayTime, 
 					monitor.lossPacketNumber, 
 					isTransform);
+			
 			if(isTransform)
 			isTransform = false;
 			}

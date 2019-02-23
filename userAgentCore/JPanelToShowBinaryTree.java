@@ -82,8 +82,10 @@ public class JPanelToShowBinaryTree extends JPanel{
 	    	   g.drawLine((int)node.width+55, (int)node.height-35,(int)node.width+30,(int)node.height+30);
 			
 	       g.fillOval((int)node.width,(int) node.height,40, 40);
+	       g.drawString("ADD: "+node.node.getAddress(), (int)node.width-25, (int) node.height-20);
 	       g.drawString("TCP: "+String.valueOf(node.node.getTcpPort()), (int)node.width-5, (int) node.height-10);
 		   g.drawString("UDP: "+String.valueOf(node.node.getUdpPort()), (int)node.width-5, (int) node.height);
+		 
 		 } 
 	}
 	 @Override

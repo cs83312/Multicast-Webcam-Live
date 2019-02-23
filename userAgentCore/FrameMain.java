@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 import javax.imageio.ImageIO;
 import javax.sdp.SdpException;
@@ -70,11 +71,14 @@ public class FrameMain extends JFrame implements ActionListener, Runnable{
 	public JTextArea transStateField;
 	private JTextField FromIPAddr;
 	private JTextField ToIPAddr;
+	JCheckBox tcpAuto;
+	JCheckBox udpAuto;
 	
 	PacketMonitor monitor;
 	private JTextField ChildNode;
 	private JTextField balanceURI;
 	private JTextField balanceTargetURI;
+	private JTextField leaveText;
 	
 public FrameMain(String username,int passWord){	
 		
@@ -85,9 +89,9 @@ public FrameMain(String username,int passWord){
 		this.setTitle("SIP User Agent"); 
 		this.setMenuBar(setMainMenuBar());
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 126, 0, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.rowHeights = new int[]{14, 29, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		getContentPane().setLayout(gridBagLayout);
 		
@@ -114,7 +118,7 @@ public FrameMain(String username,int passWord){
 		GridBagConstraints gbc_transState = new GridBagConstraints();
 		gbc_transState.weightx = 0.1;
 		gbc_transState.insets = new Insets(0, 0, 5, 5);
-		gbc_transState.gridx = 19;
+		gbc_transState.gridx = 20;
 		gbc_transState.gridy = 0;
 		getContentPane().add(transState, gbc_transState);
 		
@@ -145,7 +149,7 @@ public FrameMain(String username,int passWord){
 		gbc_scrollBar.gridwidth = 10;
 		gbc_scrollBar.gridheight = 16;
 		gbc_scrollBar.insets = new Insets(0, 0, 5, 0);
-		gbc_scrollBar.gridx = 19;
+		gbc_scrollBar.gridx = 20;
 		gbc_scrollBar.gridy = 1;
 		getContentPane().add(scrollPane, gbc_scrollBar);
 		
@@ -205,6 +209,15 @@ public FrameMain(String username,int passWord){
 		getContentPane().add(clientTcpPort, gbc_clientTcpPort);
 		clientTcpPort.setColumns(10);
 		
+		tcpAuto = new JCheckBox("auto");
+		tcpAuto.setSelected(true);
+		GridBagConstraints gbc_tcpAuto = new GridBagConstraints();
+		gbc_tcpAuto.fill = GridBagConstraints.HORIZONTAL;
+		gbc_tcpAuto.insets = new Insets(0, 0, 5, 5);
+		gbc_tcpAuto.gridx = 19;
+		gbc_tcpAuto.gridy = 4;
+		getContentPane().add(tcpAuto, gbc_tcpAuto);
+		
 		JLabel lblNewLabel_25 = new JLabel("client udp port");
 		lblNewLabel_25.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_lblNewLabel_25 = new GridBagConstraints();
@@ -224,6 +237,15 @@ public FrameMain(String username,int passWord){
 		getContentPane().add(clientUdpPort, gbc_clientUdpPort);
 		clientUdpPort.setColumns(10);
 		
+		udpAuto = new JCheckBox("auto");
+		udpAuto.setSelected(true);
+		GridBagConstraints gbc_udpAuto = new GridBagConstraints();
+		gbc_udpAuto.fill = GridBagConstraints.HORIZONTAL;
+		gbc_udpAuto.insets = new Insets(0, 0, 5, 5);
+		gbc_udpAuto.gridx = 19;
+		gbc_udpAuto.gridy = 5;
+		getContentPane().add(udpAuto, gbc_udpAuto);
+		
 		JLabel From = new JLabel("From");
 		From.setHorizontalAlignment(SwingConstants.CENTER);
 		GridBagConstraints gbc_From = new GridBagConstraints();
@@ -233,7 +255,6 @@ public FrameMain(String username,int passWord){
 		getContentPane().add(From, gbc_From);
 		
 		FromField = new JTextField();
-		FromField.setEditable(false);
 		FromField.setColumns(10);
 		GridBagConstraints gbc_FromField = new GridBagConstraints();
 		gbc_FromField.fill = GridBagConstraints.HORIZONTAL;
@@ -374,17 +395,6 @@ public FrameMain(String username,int passWord){
 		gbc_btnCreateprovider.gridy = 12;
 		getContentPane().add(btnCreateprovider, gbc_btnCreateprovider);
 		
-		JButton btnLeave = new JButton("Leave");
-		btnLeave.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
-				
-				
-				
-			}
-		});
-		
 		JButton btnPausingStream = new JButton("Pausing Stream");
 		btnPausingStream.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -405,12 +415,6 @@ public FrameMain(String username,int passWord){
 				gbc_btnPausingStream.gridx = 17;
 				gbc_btnPausingStream.gridy = 13;
 				getContentPane().add(btnPausingStream, gbc_btnPausingStream);
-		GridBagConstraints gbc_btnLeave = new GridBagConstraints();
-		gbc_btnLeave.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnLeave.insets = new Insets(0, 0, 5, 5);
-		gbc_btnLeave.gridx = 18;
-		gbc_btnLeave.gridy = 13;
-		getContentPane().add(btnLeave, gbc_btnLeave);
 		
 		JButton btnConnecttoprovider = new JButton("RootSetBalance");
 		btnConnecttoprovider.addActionListener(new ActionListener() {
@@ -459,6 +463,37 @@ public FrameMain(String username,int passWord){
 		getContentPane().add(balanceTargetURI, gbc_balanceTargetURI);
 		balanceTargetURI.setColumns(10);
 		
+		JButton btnLeave = new JButton("Leave");
+		btnLeave.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				if(!leaveText.getText().isEmpty()){
+					if(sipP2P!=null){
+						sipP2P.sendBye(FromField.getText(), leaveText.getText());
+					}
+				}
+				
+				
+			}
+		});
+		GridBagConstraints gbc_btnLeave = new GridBagConstraints();
+		gbc_btnLeave.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnLeave.insets = new Insets(0, 0, 5, 5);
+		gbc_btnLeave.gridx = 17;
+		gbc_btnLeave.gridy = 17;
+		getContentPane().add(btnLeave, gbc_btnLeave);
+		
+		leaveText = new JTextField();
+		leaveText.setText("sip:134.208.3.13:5062");
+		GridBagConstraints gbc_leaveText = new GridBagConstraints();
+		gbc_leaveText.insets = new Insets(0, 0, 5, 5);
+		gbc_leaveText.fill = GridBagConstraints.HORIZONTAL;
+		gbc_leaveText.gridx = 18;
+		gbc_leaveText.gridy = 17;
+		getContentPane().add(leaveText, gbc_leaveText);
+		leaveText.setColumns(10);
+		
 		ChildNode = new JTextField();
 		ChildNode.setText("child node");
 		GridBagConstraints gbc_ChildNode = new GridBagConstraints();
@@ -466,7 +501,7 @@ public FrameMain(String username,int passWord){
 		gbc_ChildNode.gridwidth = 6;
 		gbc_ChildNode.insets = new Insets(0, 0, 5, 5);
 		gbc_ChildNode.fill = GridBagConstraints.BOTH;
-		gbc_ChildNode.gridx = 20;
+		gbc_ChildNode.gridx = 21;
 		gbc_ChildNode.gridy = 17;
 		getContentPane().add(ChildNode, gbc_ChildNode);
 		ChildNode.setColumns(10);
@@ -624,7 +659,7 @@ public FrameMain(String username,int passWord){
 							sipP2P.setRtpTrans(rtpRecv);
 						
 						//Monitor
-						ClientMonitor clientMT = new ClientMonitor(sipP2P,ChildNode);
+						ClientMonitor clientMT = new ClientMonitor(sipP2P,userName.getText(),ChildNode);
 						clientMT.start();
 						sipP2P.setMonitor(clientMT);//invite end to end delay
 						rtpRecv.setMonitor(clientMT);//packet lost
@@ -746,16 +781,24 @@ public FrameMain(String username,int passWord){
 		
 		//set From,To and FromRTPPort
 		if(!portIsSet){
-			
-		
+			Socket socket = new Socket();	
+			portIsSet=true;
 		try {
+			 socket.connect(new InetSocketAddress("google.com", 80));
+			 FromIPAddr.setText(socket.getLocalAddress().toString().replace("/", ""));
 			if(isServer)
 				TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),5062);
 			else
-			TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort());
-			
-			TransmissionfromClientData = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort()+1);
-			portIsSet=true;
+			{	
+				if(tcpAuto.isSelected())
+				TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort());
+				else
+					TalkfromClient = new InetSocketAddress(FromIPAddr.getText(),Integer.valueOf(clientTcpPort.getText()));
+			}
+			    if(udpAuto.isSelected())
+				TransmissionfromClientData = new InetSocketAddress(FromIPAddr.getText(),use.searchCanUsePort()+1);
+			    else
+			    	TransmissionfromClientData = new InetSocketAddress(FromIPAddr.getText(),Integer.valueOf(clientUdpPort.getText()));
 			
 			TalktoRoot = new InetSocketAddress(ToIPAddr.getText(),5062);
 			clientTcpPort.setText(String.valueOf(TalkfromClient.getPort()));
